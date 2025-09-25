@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpaceCompress</title>
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #6a00ff;
+            --accent: #ad59b6;
+            --dark: #0a0a1a;
+            --light: #1a1a2e;
+            --gray: #6c757d;
+            --text: #e0e0ff;
+            --success: #00ffaa;
+            --warning: #ff8f00;
+            --danger: #ff3860;
+            --card-bg: #1a1a2e;
+            --border: #30305a;
+        }
+
+        .spaceship-tug {
+            position: absolute;
+            width: 100px;
+            height: 30px;
+            background: linear-gradient(90deg, #6a00ff, #00f0ff);
+            border-radius: 15px;
+            right: -150px;
+            top: 100px;
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.7);
+            transition: right 3s ease-in-out;
+        }
+
+        .spaceship-tug::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            background: #ff9e00;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #ff9e00;
+        }
+
+        @keyframes black-hole-explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0;
+                background: radial-gradient(circle, yellow, red);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background: var(--dark);
+            max-width: 100vw;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(106, 0, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.1) 0%, transparent 20%);
+        }
+
+        @font-face {
+            font-family: 'Orbitron';
+            src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 20px;
+            position: relative;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            font-weight: 700;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+            animation: titleGlow 3s infinite;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            }
+
+            50% {
+                text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+            }
+
+            100% {
+                text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            }
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(106, 0, 255, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin: 20px 0;
+            gap: 5px;
+            position: relative;
+        }
+
+        .tabs::before {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.3;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            border-radius: 8px 8px 0 0;
+            background: rgba(48, 48, 90, 0.5);
+            color: var(--text);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), transparent);
+            transition: all 0.3s;
+        }
+
+        .tab:hover::before {
+            left: 100%;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            background: var(--card-bg);
+            color: var(--primary);
+        }
+
+        .content {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(106, 0, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        h3 {
+            color: white;
+            margin: 20px 0 15px;
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px rgba(106, 0, 255, 0.3);
+        }
+
+        p,
+        li {
+            color: var(--text);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+
+        .alert-danger {
+            background: #c823658f;
+            border-color: #ff5297;
+        }
+
+        .alert-warning {
+            background: rgba(106, 0, 255, 0.1);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 170, 0.1);
+            border-color: var(--success);
+        }
+
+        .alert-info {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .crew-message {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(106, 0, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .crew-avatar {
+            font-size: 2.5em;
+            flex-shrink: 0;
+        }
+
+        .crew-text {
+            flex-grow: 1;
+        }
+
+        .crew-name {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .demo-box {
+            margin-top: 25px;
+            border: 2px dashed var(--success);
+            border-radius: 12px;
+            padding: 20px;
+            background: rgba(0, 255, 170, 0.05);
+            position: relative;
+        }
+
+        .demo-box::before {
+            content: 'ЭКСПЕРИМЕНТАЛЬНАЯ ЗОНА';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--card-bg);
+            padding: 0 10px;
+            font-size: 0.8em;
+            color: var(--success);
+            letter-spacing: 1px;
+        }
+
+        input,
+        textarea,
+        select,
+        button {
+            font-family: inherit;
+            padding: 12px 18px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 1rem;
+            background: rgba(48, 48, 90, 0.5);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #0a0a1a;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: -1;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.3);
+        }
+
+        button:hover::before {
+            opacity: 1;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(48, 48, 90, 0.5);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+            min-height: 60px;
+            color: var(--text);
+            position: relative;
+        }
+
+        .result::before {
+            content: 'РЕЗУЛЬТАТ';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--card-bg);
+            padding: 0 5px;
+            font-size: 0.8em;
+            color: var(--primary);
+        }
+
+        .countdown {
+            background: #c823658f;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+            border-left: 4px solid #ff5297;
+        }
+
+        .countdown-timer {
+            font-size: 1.8em;
+            color: #ff5297;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .countdown-label {
+            font-size: 0.8em;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        /* Стили для миссии */
+        .mission-progress {
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .mission-progress::before {
+            content: 'ПРОГРЕСС СПАСЕНИЯ';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            font-size: 0.8em;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(48, 48, 90, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            width: 10%;
+            transition: width 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .spaceship-view {
+            position: relative;
+            height: 400px;
+            background: #0a0a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(2px 2px at 20% 30%, white, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 80% 70%, white, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 40% 20%, white, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 60% 90%, white, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 30% 50%, white, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 70% 30%, white, rgba(0, 0, 0, 0));
+        }
+
+        .spaceship {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 80px;
+    height: 40px;
+    background: var(--secondary);
+    border-radius: 20px 50px 50px 20px;
+    z-index: 10;
+    transform: rotate(45deg);
+    transform-origin: center center;
+    transition: left 0.05s linear, top 0.05s linear;
+    box-shadow: 0 0 15px rgba(106, 0, 255, 0.5);
+    display: none;
+}
+
+.spaceship .window {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+}
+
+.spaceship .engine {
+    position: absolute;
+    left: -10px;
+    top: 15px;
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 15px var(--accent);
+    animation: engine-pulse 0.5s infinite alternate;
+}
+
+        .engine-fire {
+            position: absolute;
+            left: -25px;
+            top: 10px;
+            width: 20px;
+            height: 10px;
+            background: linear-gradient(90deg, var(--accent), #ff9e00);
+            border-radius: 50% 10px 10px 50%;
+            filter: blur(2px);
+            animation: fire-pulse 0.1s infinite alternate;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .trail {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            border-radius: 50%;
+            filter: blur(1px);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        @keyframes fire-pulse {
+            0% {
+                transform: scaleX(0.9);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scaleX(1.1);
+                opacity: 1;
+            }
+        }
+
+        .explosion {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 0, 160, 0.8), transparent 70%);
+            animation: explode 1s forwards;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes explode {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        .space-station {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+        }
+
+        .station-core {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.7);
+        }
+
+        .station-ring {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(173, 89, 182, 0.7);
+        }
+
+        .station-dock {
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            background: var(--secondary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            border-radius: 5px;
+        }
+
+        .rescue-success {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 26, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--success);
+            box-shadow: 0 0 30px var(--success);
+            text-align: center;
+            z-index: 100;
+            max-width: 80%;
+        }
+
+        .rescue-success h2 {
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+
+        .rescue-stats {
+            background: rgba(0, 255, 170, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+            margin: 15px 0;
+        }
+
+        .black-hole {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.8) 70%);
+            border-radius: 50%;
+            left: 70%;
+            top: 30%;
+            animation: pulse 2s infinite;
+            z-index: 4;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+        }
+
+        .mission-files {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-list {
+            flex-grow: 1;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(48, 48, 90, 0.5);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .file-icon {
+            font-size: 1.2em;
+            color: var(--primary);
+        }
+
+        .file-name {
+            font-weight: bold;
+            flex-grow: 1;
+        }
+
+        .file-size {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .compression-select {
+            width: 150px;
+            padding: 10px;
+            background: rgba(48, 48, 90, 0.5);
+            color: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .compression-select:hover {
+            border-color: var(--primary);
+        }
+
+        .compression-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .mission-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            background: rgba(106, 0, 255, 0.2);
+            border: 1px solid var(--secondary);
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .launch-btn {
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .launch-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .launch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 160, 0.3);
+        }
+
+        .launch-btn:hover::before {
+            opacity: 1;
+        }
+
+        .launch-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .launch-btn:disabled:hover::before {
+            opacity: 0;
+        }
+
+        /* Анимации */
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* Стили для алгоритмов */
+        .algorithm-explanation {
+            background: rgba(0, 240, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .algorithm-explanation::before {
+            content: 'АНАЛИЗ АЛГОРИТМА';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--card-bg);
+            padding: 0 10px;
+            font-size: 0.8em;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .algorithm-steps {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+
+        .algorithm-steps li {
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .algorithm-steps li::before {
+            position: absolute;
+            left: -20px;
+            color: var(--primary);
+        }
+
+        /* Дерево Хаффмана */
+        .tree-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(106, 0, 255, 0.5);
+            font-weight: bold;
+        }
+
+        .tree-node.leaf {
+            background: var(--accent);
+            box-shadow: 0 0 10px rgba(255, 0, 160, 0.5);
+        }
+
+        #huffman-tree-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+            overflow: visible;
+            background: rgba(0, 240, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .tree-connector {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: var(--gray);
+        }
+
+        .tree-code {
+            font-size: 0.8em;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+
+        .tree-branch {
+            position: absolute;
+            top: -20px;
+            width: 2px;
+            height: 20px;
+            background: var(--gray);
+        }
+
+        .tree-branch.left {
+            left: 50%;
+            transform: translateX(-50%) rotate(-30deg);
+            transform-origin: bottom;
+        }
+
+        .tree-branch.right {
+            right: 50%;
+            transform: translateX(50%) rotate(30deg);
+            transform-origin: bottom;
+        }
+
+        code {
+            background: rgba(0, 240, 255, 0.1);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            border: 1px solid rgba(255, 0, 160, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+
+            .spaceship-view {
+                height: 250px;
+            }
+        }
+
+        .sci-fi-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background:
+                radial-gradient(circle at 20% 30%, var(--primary), transparent 30%),
+                radial-gradient(circle at 80% 70%, var(--secondary), transparent 30%);
+        }
+
+        .mission-briefing {
+            background: rgba(0, 240, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .mission-objectives {
+            margin: 20px 0;
+        }
+
+        .objective {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .objective-icon {
+            font-size: 1.5em;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .objective-text {
+            flex-grow: 1;
+        }
+
+        .objective-completed {
+            color: var(--success);
+        }
+        .hidden {
+    display: none !important;
+}
+
+.image-preview {
+    width: 100%;
+    height: 200px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    background-color: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.result-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(48, 48, 90, 0.3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background: var(--light);
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+    </style>
+</head>
+
+<body>
+    <div class="sci-fi-effect"></div>
+    <div class="app">
+        <header>
+            <h1>SpaceCompress</h1>
+            <p class="subtitle">Миссия: Спасение станции "Мяуринер"</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="home">Центр управления</div>
+            <div class="tab" data-tab="rle">RLE-компрессор</div>
+            <div class="tab" data-tab="huffman">Кодер Хаффмана</div>
+            <div class="tab" data-tab="lzw">LZW-архиватор</div>
+            <div class="tab" data-tab="images">Оптимизатор изображений</div>
+            <div class="tab" data-tab="game">Операция "Спасение"</div>
+        </div>
+
+        <div class="content">
+            <!-- Центр управления -->
+            <div id="home" class="tab-content active">
+                <div class="card">
+                    <h2>Экстренная ситуация</h2>
+
+                    <div class="alert alert-danger">
+                        <h3>Критическое сообщение:</h3>
+                        <p>Космическая станция "Мяуринер", дрейфующая на границе Солнечной системы, попала в смертельное
+                            гравитационное поле чёрной дыры. Последнее закодированное сообщение от экипажа:</p>
+                        <p
+                            style="font-family: 'Courier New', monospace; background: rgba(0,0,0,0.3); padding: 10px; border-left: 3px solid #ff5297;">
+                            "СИСТЕМЫ... СБОЙ... ДАННЫЕ... ПЕРЕГРУЗ... НУЖНЫ АЛГОРИТМЫ... СЖАТИЯ... СПАСТИ..."
+                        </p>
+                    </div>
+
+                    <div class="crew-message">
+                        <div class="crew-avatar">👨‍🚀</div>
+                        <div class="crew-text">
+                            <div class="crew-name">Капитан Мурков:</div>
+                            <p>"Основной двигатель повреждён, а резервный не справится без точных расчётов с Земли. Без
+                                точных координат буксировочный манёвр невозможен. У нас есть всего 47 минут до того, как
+                                станцию поглотит горизонт событий. Канал связи из-за гравитационных помех работает всего
+                                на 5% мощности. Без сжатия данных передача координат и инструкций займёт 3 часа —
+                                слишком долго, нас уже не спасут. Ваша помощь — единственный шанс спасти экипаж!"</p>
+                        </div>
+                    </div>
+
+                    <div class="mission-briefing">
+                        <h3>Брифинг миссии:</h3>
+                        <p>Космическая станция "Мяуринер" с экипажем из 12 человек оказалась в ловушке чёрной дыры.
+                            Системы станции перегружены, а каналы связи работают с минимальной пропускной способностью.
+
+
+                        </p>
+                        <p>Ваша задача: Освоить ключевые технологии сжатия данных, чтобы спасти экипаж и передать
+                            критически важную информацию для расчёта спасательной траектории.</p>
+                    </div>
+
+                    <div class="mission-objectives">
+                        <h3>Цели миссии:</h3>
+                        <div class="objective">
+                            <div class="objective-icon">🔍</div>
+                            <div class="objective-text">Проанализировать повреждённые логи станции (RLE-компрессор)
+                            </div>
+                        </div>
+                        <div class="objective">
+                            <div class="objective-icon">📡</div>
+                            <div class="objective-text">Оптимизировать передачу координат (Кодер Хаффмана)</div>
+                        </div>
+                        <div class="objective">
+                            <div class="objective-icon">🖼️</div>
+                            <div class="objective-text">Сжать изображения чёрной дыры (Оптимизатор изображений)</div>
+                        </div>
+                        <div class="objective">
+                            <div class="objective-icon">🚀</div>
+                            <div class="objective-text">Подготовить данные для спасательной операции (LZW-архиватор)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="countdown">
+                        <div class="countdown-timer" id="global-countdown">47:00</div>
+                        <div class="countdown-label">До критического сближения с чёрной дырой</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h3>Совет инженера:</h3>
+                        <p>Начните с RLE-компрессора для восстановления повреждённых логов. Это позволит
+                            идентифицировать основные неисправности и подготовить систему для последующих операций.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RLE -->
+            <div id="rle" class="tab-content">
+                <div class="card">
+                    <h2>RLE-компрессор</h2>
+
+                    <div class="crew-message">
+                        <div class="crew-avatar">👩‍🔬</div>
+                        <div class="crew-text">
+                            <div class="crew-name">Инженер Петрова:</div>
+                            <p>"Тревога! Двигатель №3 перегревается, система охлаждения на пределе! Последние данные по
+                                температуре: 2222222222555555553333. Нам срочно нужно сжать эту информацию, чтобы успеть
+                                обработать её и запустить аварийное охлаждение. Если мы не восстановим
+                                последовательности прямо сейчас, мы потеряем управление!"</p>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-explanation">
+                        <h3>Принцип работы RLE:</h3>
+                        <ol class="algorithm-steps">
+                            <li>Анализирует повторяющиеся показания датчиков (например, 00000)</li>
+                            <li>Заменяет их на пару "количество-значение" (50)</li>
+                            <li>Восстанавливает повреждённые участки логов</li>
+                        </ol>
+
+                        <h3>Пример из бортового журнала:</h3>
+                        <p>Исходные данные: <code>Температура: 2222222222555555553333</code></p>
+                        <p>После сжатия: <code>Температура: 92 85 43</code></p>
+                        <p>Экономия: 24 символа → 14 символов (экономия 42%)</p>
+                    </div>
+
+                    <div class="demo-box">
+                        <h3>Восстановление логов:</h3>
+                        <textarea id="rle-input"
+                            placeholder="Введите повреждённые данные датчиков (например, АААББВВГГГГ)">2222222222555555553333</textarea>
+                        <button onclick="runRLE()">Активировать компрессор</button>
+                        <div class="result" id="rle-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Хаффман -->
+            <div id="huffman" class="tab-content">
+                <div class="card">
+                    <h2>Кодер Хаффмана</h2>
+
+                    <div class="crew-message">
+                        <div class="crew-avatar">👨‍💻</div>
+                        <div class="crew-text">
+                            <div class="crew-name">Специалист по связи Иванов:</div>
+                            <p>"Координаты чёрной дыры критически важны для спасательной операции. Канал связи
+                                перегружен — каждое слово, каждый бит на вес золота! Используйте самое эффективное
+                                кодирование, чтобы информация дошла без задержек. Судьба всей миссии зависит от этого!"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-explanation">
+                        <h3>Как строится дерево Хаффмана:</h3>
+                        <ol class="algorithm-steps">
+                            <li>Анализируется частота символов в сообщении</li>
+                            <li>Каждый символ становится листом дерева с его частотой</li>
+                            <li>Соединяются два узла с наименьшими частотами</li>
+                            <li>Процесс повторяется до образования единого дерева</li>
+                            <li>Левым ветвям присваивается 0, правым — 1</li>
+                            <li>Код символа — это путь от корня к листу</li>
+                        </ol>
+                    </div>
+
+                    <div class="demo-box">
+                        <h3>Постройте дерево кодирования:</h3>
+                        <div id="huffman-inputs">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <input type="text" placeholder="Символ" maxlength="1" class="huffman-char" value="А">
+                                <input type="number" placeholder="Частота" min="1" class="huffman-freq" value="5">
+                            </div>
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <input type="text" placeholder="Символ" maxlength="1" class="huffman-char" value="Б">
+                                <input type="number" placeholder="Частота" min="1" class="huffman-freq" value="2">
+                            </div>
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <input type="text" placeholder="Символ" maxlength="1" class="huffman-char" value="В">
+                                <input type="number" placeholder="Частота" min="1" class="huffman-freq" value="1">
+                            </div>
+                        </div>
+                        <button onclick="addHuffmanRow()" style="background: var(--gray); margin-bottom: 15px;">+
+                            Добавить символ</button>
+                        <button onclick="buildHuffmanTree()">Построить дерево</button>
+
+                        <div class="tree-container" id="huffman-tree-container">
+                            <!-- Здесь будет дерево -->
+                        </div>
+
+                        <div class="result" id="huffman-codes"></div>
+
+                        <h3>Закодируйте координаты:</h3>
+                        <textarea id="huffman-text" placeholder="Введите координаты для кодирования">АААААББВ</textarea>
+                        <button onclick="encodeHuffmanText()">Начать кодирование</button>
+                        <div class="result" id="huffman-text-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LZW -->
+            <div id="lzw" class="tab-content">
+                <div class="card">
+                    <h2>LZW-архиватор</h2>
+
+                    <div class="crew-message">
+                        <div class="crew-avatar">👩‍🚀</div>
+                        <div class="crew-text">
+                            <div class="crew-name">Бортинженер Соколова:</div>
+                            <p>"Технические мануалы — это жизненно важные инструкции, но они занимают слишком много
+                                памяти. Нам срочно нужно сжать эти данные, чтобы освободить место для расчётов
+                                траектории спасения. Без этого операция обречена на провал!"</p>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-explanation">
+                        <h3>Как работает LZW — пример для "ТОТ_ТАК_ТОТ_ТАК":</h3>
+                        <ol class="algorithm-steps">
+                            <li><strong>Начальный словарь:</strong> Т=275, О=271, _=95, А=256, К=267</li>
+                            <li><strong>Шаг 1:</strong> "Т" есть → "ТО" добавляем (322=ТО), выводим 275.</li>
+                            <li><strong>Шаг 2:</strong> "О" есть → "ОТ" добавляем (323=ОТ), выводим 271.</li>
+                            <li><strong>Шаг 3:</strong> "Т" есть → "Т_" добавляем (324=Т_), выводим 275.</li>
+                            <li><strong>Шаг 4:</strong> "_" есть → "_Т" добавляем (325=_Т), выводим 95.</li>
+                            <li><strong>Шаг 5:</strong> "Т" есть → "ТА" добавляем (326=ТА), выводим 275.</li>
+                            <li><strong>Шаг 6:</strong> "А" есть → "АК" добавляем (327=АК), выводим 256.</li>
+                            <li><strong>Шаг 7:</strong> "К" есть → "К_" добавляем (328=К_), выводим 267.</li>
+                            <li><strong>Шаг 8:</strong> "_Т" есть → "_ТО" добавляем (329=_ТО), выводим 325.</li>
+                            <li><strong>Шаг 9:</strong> "ОТ" есть → "ОТ_" добавляем (330=ОТ_), выводим 323.</li>
+                            <li><strong>Шаг 10:</strong> "_Т" есть → "_ТА" добавляем (331=_ТА), выводим 325.</li>
+                            <li><strong>Шаг 11:</strong> "АК" есть, выводим 327.</li>
+                            <li><strong>Результат:</strong> 275 271 275 95 275 256 267 325 323 325 327</li>
+                        </ol>
+                    </div>
+
+                    <div class="demo-box">
+                        <h3>Архивация данных:</h3>
+                        <textarea id="lzw-input"
+                            placeholder="Введите текст для архивации (например, ТОТ_ТАК_ТОТ_ТАК)">ТОТ_ТАК_ТОТ_ТАК</textarea>
+                        <button onclick="runLZW()">Запустить архиватор</button>
+                        <div class="result" id="lzw-result"></div>
+
+                        <h3>Динамический словарь:</h3>
+                        <div id="lzw-dict" class="result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Изображения -->
+            <div id="images" class="tab-content">
+                <div class="card">
+                    <h2>Оптимизатор изображений</h2>
+
+                    <div class="crew-message">
+                        <div class="crew-avatar">👨‍🔧</div>
+                        <div class="crew-text">
+                            <div class="crew-name">Техник Волков:</div>
+                            <p>"Фотографии чёрной дыры критически важны, но занимают слишком много места. Нам надо найти
+                                идеальный баланс между качеством и размером, чтобы не потерять ни одной детали!"</p>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-explanation">
+                        <h3>Технологии сжатия изображений:</h3>
+                        <ol class="algorithm-steps">
+                            <li><strong>PNG (без потерь):</strong>
+                                <ul>
+                                    <li>Используется для схем и чертежей космических аппаратов</li>
+                                    <li>Применяет алгоритмы LZW и DEFLATE</li>
+                                    <li>Гарантирует точное сохранение всех деталей</li>
+                                </ul>
+                            </li>
+                            <li><strong>JPEG (с потерями):</strong>
+                                <ul>
+                                    <li>Оптимален для фотографий планет и звёзд</li>
+                                    <li>Использует дискретное косинусное преобразование</li>
+                                    <li>Допускает потерю незначительных деталей</li>
+                                </ul>
+                            </li>
+                            <li><strong>WebP (современный формат):</strong>
+                                <ul>
+                                    <li>Стандарт для веб-интерфейсов космических станций</li>
+                                    <li>На 30% эффективнее JPEG при том же качестве</li>
+                                    <li>Поддерживает прозрачность и анимацию</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+
+                     <div class="demo-box">
+            <h3>Оптимизация изображения:</h3>
+            <div class="image-upload" style="margin-bottom: 15px;">
+                <label for="image-upload" style="display: block; margin-bottom: 10px; color: var(--primary);">Выберите изображение чёрной дыры:</label>
+                <input type="file" id="image-upload" accept="image/*" style="padding: 8px; border: 1px dashed var(--primary);">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label for="compression-type" style="display: block; margin-bottom: 5px; color: var(--primary);">Тип сжатия:</label>
+                    <select id="compression-type" class="compression-select">
+                        <option value="png">PNG (для чертежей и схем)</option>
+                        <option value="jpeg">JPEG (для фотографий космоса)</option>
+                        <option value="webp">WebP (современный стандарт)</option>
+                    </select>
+                </div>
+                <div style="flex: 1;" id="quality-container" class="hidden">
+                    <label for="quality" style="display: block; margin-bottom: 5px; color: var(--primary);">Качество (1-100):</label>
+                    <input type="range" id="quality" min="1" max="100" value="80" class="compression-select">
+                    <span id="quality-value">80%</span>
+                </div>
+            </div>
+
+            <button onclick="compressImage()">Начать оптимизацию</button>
+            
+            <div class="result-container hidden" id="result-container">
+                <div style="display: flex; gap: 20px; margin-top: 20px;">
+                    <div style="flex: 1;">
+                        <h4>Исходное изображение</h4>
+                        <div class="image-preview" id="original-preview"></div>
+                        <div id="original-size"></div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4>Сжатое изображение</h4>
+                        <div class="image-preview" id="compressed-preview"></div>
+                        <div id="compressed-size"></div>
+                    </div>
+                </div>
+                <button onclick="downloadCompressedImage()" style="margin-top: 15px;">
+                    <span style="margin-right: 8px;">⬇️</span> Скачать сжатое изображение
+                </button>
+                <div class="result" id="image-result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Игра -->
+            <div id="game" class="tab-content">
+                <div class="card">
+                    <h2>Операция "Спасение"</h2>
+
+                    <div class="alert alert-warning">
+                        <h3>Финальная подготовка:</h3>
+                        <p>Все данные собраны. Ваша задача — грамотно оптимизировать их для передачи в Центр управления
+                            полётами. От ваших решений зависит судьба станции и экипажа!</p>
+                    </div>
+
+                    <div class="countdown">
+                        <div class="countdown-timer" id="mission-countdown">15:00</div>
+                        <div class="countdown-label">До потери связи со станцией</div>
+                    </div>
+
+                    <div class="mission-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="mission-progress" style="width: 10%;"></div>
+                        </div>
+                        <div class="progress-text" id="mission-text">Готовность передачи: 10%</div>
+                    </div>
+
+                    <div class="game-container">
+                        <div class="spaceship" id="spaceship">
+    <div class="window"></div>
+    <div class="engine"></div>
+</div>
+                        <div class="spaceship-view">
+                            <div class="stars"></div>
+                            <div class="black-hole" id="black-hole"></div>
+                            <div class="space-station" id="space-station">
+                                <div class="station-core"></div>
+                                <div class="station-ring"></div>
+                                <div class="station-dock"></div>
+                            </div>
+                        </div>
+
+                        <div class="mission-files">
+                            <h3>Критически важные данные:</h3>
+                            <div class="file-list">
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <span class="file-name">Логи двигателя (повторы)</span>
+                                        <span class="file-size">12MB</span>
+                                    </div>
+                                    <select class="compression-select" onchange="updateMission()">
+                                        <option value="0">Не сжимать</option>
+                                        <option value="40">RLE (40%)</option>
+                                        <option value="30">Huffman (30%)</option>
+                                        <option value="50">LZW (50%)</option>
+                                    </select>
+                                </div>
+
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <span class="file-name">Координаты чёрной дыры</span>
+                                        <span class="file-size">8MB</span>
+                                    </div>
+                                    <select class="compression-select" onchange="updateMission()">
+                                        <option value="0">Не сжимать</option>
+                                        <option value="45">Huffman (45%)</option>
+                                        <option value="35">LZW (35%)</option>
+                                    </select>
+                                </div>
+
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <span class="file-name">Фото чёрной дыры</span>
+                                        <span class="file-size">25MB</span>
+                                    </div>
+                                    <select class="compression-select" onchange="updateMission()">
+                                        <option value="0">Не сжимать</option>
+                                        <option value="60">JPEG (60%)</option>
+                                        <option value="70">WebP (70%)</option>
+                                    </select>
+                                </div>
+
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <span class="file-name">Технические мануалы</span>
+                                        <span class="file-size">30MB</span>
+                                    </div>
+                                    <select class="compression-select" onchange="updateMission()">
+                                        <option value="0">Не сжимать</option>
+                                        <option value="55">LZW (55%)</option>
+                                        <option value="40">Huffman (40%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mission-message" id="mission-message">
+                                ⚠️ Внимание! Выберите подходящие алгоритмы сжатия для каждого типа данных. Ошибка может
+                                привести к потере жизненно важной информации и сорвать операцию спасения!
+
+
+                            </div>
+
+                            <button class="launch-btn" id="launch-btn" disabled onclick="launchSpaceship()">Передать
+                                данные!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальный таймер
+        let globalTimeLeft = 47 * 60; // 47 минут в секундах
+        const globalCountdown = setInterval(() => {
+            globalTimeLeft--;
+            const minutes = Math.floor(globalTimeLeft / 60);
+            const seconds = globalTimeLeft % 60;
+            document.getElementById('global-countdown').textContent =
+                `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (globalTimeLeft <= 0) {
+                clearInterval(globalCountdown);
+                document.querySelector('.alert-danger').innerHTML += `
+                    <div style="margin-top: 10px; color: var(--accent);">
+                        ВРЕМЯ ВЫШЛО! Станция "Мяуринер" потеряна...
+                    </div>
+                `;
+            }
+        }, 1000);
+
+        // Таймер для миссии
+        let missionTimeLeft = 15 * 60; // 15 минут в секундах
+        const missionCountdown = setInterval(() => {
+            missionTimeLeft--;
+            const minutes = Math.floor(missionTimeLeft / 60);
+            const seconds = missionTimeLeft % 60;
+            document.getElementById('mission-countdown').textContent =
+                `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (missionTimeLeft <= 0) {
+                clearInterval(missionCountdown);
+                document.getElementById('mission-message').innerHTML = `
+                    <h3 style="color: var(--danger); margin-top: 0;">Связь потеряна!</h3>
+                    <p>Станция "Мяуринер" не успела передать все данные.</p>
+                    <button onclick="resetMission()" style="margin-top: 10px;">Попробовать снова</button>
+                `;
+                document.getElementById('mission-message').style.background = 'rgba(255, 0, 0, 0.1)';
+                document.getElementById('mission-message').style.borderColor = 'var(--danger)';
+                document.getElementById('launch-btn').disabled = true;
+            }
+        }, 1000);
+
+        function resetMission() {
+            missionTimeLeft = 15 * 60;
+            document.querySelectorAll('.compression-select').forEach(select => {
+                select.value = '0';
+            });
+            document.getElementById('mission-progress').style.width = '10%';
+            document.getElementById('mission-text').textContent = 'Готовность передачи: 10%';
+            document.getElementById('mission-message').textContent =
+                '⚠️ Внимание! Выберите оптимальные алгоритмы сжатия для каждого типа данных.';
+            document.getElementById('mission-message').style.background = 'rgba(106, 0, 255, 0.2)';
+            document.getElementById('mission-message').style.borderColor = 'var(--secondary)';
+            document.getElementById('launch-btn').disabled = true;
+
+            // Сброс анимации корабля
+            const spaceship = document.getElementById('spaceship');
+            spaceship.style.left = '20px';
+            spaceship.style.top = '20px';
+            spaceship.style.width = '80px';
+            spaceship.style.height = '40px';
+            spaceship.style.transform = 'rotate(45deg)';
+            document.querySelectorAll('.trail').forEach(el => el.remove());
+            document.querySelectorAll('.engine-fire').forEach(el => el.remove());
+        }
+
+        // Переключение вкладок
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // RLE
+        function runRLE() {
+            const input = document.getElementById('rle-input').value;
+            if (!input) {
+                document.getElementById('rle-result').textContent = "Введите повреждённые данные датчиков";
+                return;
+            }
+
+            let result = '';
+            let count = 1;
+
+            for (let i = 1; i <= input.length; i++) {
+                if (i < input.length && input[i] === input[i - 1]) {
+                    count++;
+                } else {
+                    result += (count > 1 ? count : '') + input[i - 1];
+                    count = 1;
+                }
+            }
+
+            const originalSize = input.length;
+            const compressedSize = result.length;
+            const ratio = (originalSize / compressedSize).toFixed(2);
+
+            document.getElementById('rle-result').textContent =
+                `Восстановленные данные: ${result}\n` +
+                `Исходный размер: ${originalSize} символов\n` +
+                `Сжатый размер: ${compressedSize} символов\n` +
+                `Коэффициент сжатия: ${ratio}:1\n\n` +
+                `✅ Логи датчиков успешно восстановлены!`;
+        }
+
+        // Хаффман
+        function addHuffmanRow() {
+            const container = document.getElementById('huffman-inputs');
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.gap = '15px';
+            div.style.marginBottom = '15px';
+            div.innerHTML = `
+                <input type="text" placeholder="Символ" maxlength="1" class="huffman-char">
+                <input type="number" placeholder="Частота" min="1" class="huffman-freq">
+            `;
+            container.appendChild(div);
+        }
+
+        function buildHuffmanTree() {
+            const chars = [];
+            const freqs = [];
+
+            document.querySelectorAll('.huffman-char').forEach((input, i) => {
+                const freqInput = document.querySelectorAll('.huffman-freq')[i];
+                if (input.value && freqInput.value) {
+                    chars.push(input.value);
+                    freqs.push(parseInt(freqInput.value));
+                }
+            });
+
+            if (chars.length < 2) {
+                alert('Для построения дерева нужно минимум 2 символа!');
+                return;
+            }
+
+            let nodes = chars.map((char, i) => ({
+                type: 'leaf',
+                char: char,
+                freq: freqs[i],
+                code: ''
+            })).sort((a, b) => a.freq - b.freq);
+
+            while (nodes.length > 1) {
+                const left = nodes.shift();
+                const right = nodes.shift();
+
+                const newNode = {
+                    type: 'node',
+                    freq: left.freq + right.freq,
+                    left: left,
+                    right: right,
+                    code: ''
+                };
+
+                let insertIndex = 0;
+                while (insertIndex < nodes.length && nodes[insertIndex].freq < newNode.freq) {
+                    insertIndex++;
+                }
+                nodes.splice(insertIndex, 0, newNode);
+            }
+
+            const root = nodes[0];
+
+            function assignCodes(node, code) {
+                node.code = code;
+                if (node.left) assignCodes(node.left, code + '0');
+                if (node.right) assignCodes(node.right, code + '1');
+            }
+            assignCodes(root, '');
+
+            window.huffmanTreeRoot = root;
+
+            visualizeTree(root);
+            showSymbolCodes(root);
+        }
+
+        function visualizeTree(root) {
+            const container = document.getElementById('huffman-tree-container');
+            container.innerHTML = '';
+
+            function drawNode(node, level, pos, parentPos) {
+                if (!node) return;
+
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `tree-node ${node.type}`;
+                nodeEl.textContent = node.type === 'leaf'
+                    ? `${node.char}:${node.freq}`
+                    : node.freq;
+
+                nodeEl.style.left = `${pos}px`;
+                nodeEl.style.top = `${level * 100}px`;
+                container.appendChild(nodeEl);
+
+                if (parentPos !== undefined) {
+                    const line = document.createElement('div');
+                    line.className = 'tree-connector';
+                    const left = Math.min(pos, parentPos) + 25;
+                    const width = Math.abs(pos - parentPos);
+                    line.style.cssText = `
+                        left: ${left}px;
+                        top: ${level * 100 - 20}px;
+                        width: ${width}px;
+                    `;
+                    container.appendChild(line);
+                }
+
+                drawNode(node.left, level + 1, pos - (200 / (level + 1)), pos);
+                drawNode(node.right, level + 1, pos + (200 / (level + 1)), pos);
+            }
+
+            drawNode(root, 0, 400);
+        }
+
+        function showSymbolCodes(root) {
+            const codes = {};
+            function traverse(node) {
+                if (node.type === 'leaf') {
+                    codes[node.char] = node.code;
+                } else {
+                    if (node.left) traverse(node.left);
+                    if (node.right) traverse(node.right);
+                }
+            }
+            traverse(root);
+
+            let codesText = 'Коды символов:\n';
+            for (const [char, code] of Object.entries(codes)) {
+                codesText += `${char} = ${code}\n`;
+            }
+            document.getElementById('huffman-codes').textContent = codesText;
+        }
+
+        function encodeHuffmanText() {
+            const text = document.getElementById('huffman-text').value;
+            if (!text) {
+                document.getElementById('huffman-text-result').textContent = "Введите координаты для кодирования";
+                return;
+            }
+
+            if (!window.huffmanTreeRoot) {
+                document.getElementById('huffman-text-result').textContent = "Сначала постройте дерево кодирования!";
+                return;
+            }
+
+            const codes = {};
+            function collectCodes(node) {
+                if (node.type === 'leaf') {
+                    codes[node.char] = node.code;
+                } else {
+                    if (node.left) collectCodes(node.left);
+                    if (node.right) collectCodes(node.right);
+                }
+            }
+            collectCodes(window.huffmanTreeRoot);
+
+            let result = '';
+            for (const char of text) {
+                if (codes[char]) {
+                    result += codes[char] + ' ';
+                } else {
+                    result += `[${char}?] `;
+                }
+            }
+
+            const originalSize = text.length * 8;
+            const compressedSize = result.trim().split(' ').reduce((acc, code) => acc + code.length, 0);
+            const ratio = (originalSize / compressedSize).toFixed(2);
+
+            document.getElementById('huffman-text-result').textContent =
+                `Закодированные координаты:\n${result.trim()}\n\n` +
+                `Исходный размер: ~${originalSize} бит\n` +
+                `Сжатый размер: ${compressedSize} бит\n` +
+                `Коэффициент сжатия: ${ratio}:1\n\n` +
+                `✅ Координаты оптимизированы для передачи!`;
+        }
+
+        // LZW
+        function runLZW() {
+            const input = document.getElementById('lzw-input').value;
+            if (!input) {
+                document.getElementById('lzw-result').textContent = "Введите текст для архивации";
+                return;
+            }
+
+            const dictionary = {};
+            for (let i = 0; i < 256; i++) {
+                dictionary[String.fromCharCode(i)] = i;
+            }
+            let nextCode = 256;
+
+            const russianLetters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+            for (const char of russianLetters) {
+                dictionary[char] = nextCode++;
+            }
+
+            let current = "";
+            const result = [];
+            const dictEntries = [];
+
+            for (const char of input) {
+                const combined = current + char;
+                if (dictionary.hasOwnProperty(combined)) {
+                    current = combined;
+                } else {
+                    result.push(dictionary[current]);
+                    dictionary[combined] = nextCode++;
+                    dictEntries.push(`${dictionary[combined]} = ${combined}`);
+                    current = char;
+                }
+            }
+
+            if (current) {
+                result.push(dictionary[current]);
+            }
+
+            document.getElementById('lzw-result').textContent =
+                `Сжатые данные: ${result.join(' ')}\n` +
+                `Исходный размер: ${input.length} символов\n` +
+                `Сжатый размер: ${result.length} кодов\n` +
+                `Коэффициент сжатия: ${(input.length / result.length).toFixed(2)}:1\n\n` +
+                `✅ Технические мануалы успешно сжаты!`;
+
+            document.getElementById('lzw-dict').textContent =
+                'Новые записи словаря:\n' + dictEntries.join('\n');
+        }
+
+        // Сжатие изображений
+        function compressImage() {
+            const fileInput = document.getElementById('image-upload');
+            const compressionType = document.getElementById('compression-type').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                document.getElementById('image-result').textContent = "Выберите изображение чёрной дыры";
+                return;
+            }
+
+            const file = fileInput.files[0];
+            let originalSize = Math.round(file.size / 1024);
+            let compressedSize;
+            let quality;
+
+            switch (compressionType) {
+                case 'png':
+                    compressedSize = Math.round(originalSize * 0.6);
+                    quality = "без потерь (оптимально для схем)";
+                    break;
+                case 'jpeg':
+                    compressedSize = Math.round(originalSize * 0.2);
+                    quality = "с потерями (лучше для фото)";
+                    break;
+                case 'webp':
+                    compressedSize = Math.round(originalSize * 0.35);
+                    quality = "баланс качества и размера";
+                    break;
+                default:
+                    compressedSize = originalSize;
+                    quality = "без сжатия";
+            }
+
+            document.getElementById('image-result').textContent =
+                `Изображение оптимизировано в формате ${compressionType.toUpperCase()} (${quality}).\n` +
+                `Размер уменьшен с ${originalSize}KB до ${compressedSize}KB\n` +
+                `Экономия места: ${Math.round((1 - compressedSize / originalSize) * 100)}%\n\n` +
+                `✅ Фото чёрной дыры готово к передаче!`;
+        }
+
+        // Игра
+function updateMission() {
+    // Получаем все элементы файлов и select
+    const fileItems = document.querySelectorAll('.file-item');
+    let totalOriginalSize = 0;
+    let totalCompressedSize = 0;
+    
+    fileItems.forEach(item => {
+        // Получаем размер файла из текста (например "12MB" -> 12)
+        const sizeText = item.querySelector('.file-size').textContent;
+        const size = parseFloat(sizeText) || 0;
+        totalOriginalSize += size;
+        
+        // Получаем выбранный процент сжатия
+        const select = item.querySelector('.compression-select');
+        const compressionPercent = parseInt(select.value) || 0;
+        
+        // Рассчитываем сжатый размер
+        totalCompressedSize += size * (100 - compressionPercent) / 100;
+    });
+    
+    // Рассчитываем прогресс (10-100%)
+    let progress = 10; // Минимальный прогресс
+    
+    if (totalOriginalSize > 0) {
+        const efficiency = 1 - (totalCompressedSize / totalOriginalSize);
+        progress = 50 + Math.min(90, Math.round(efficiency * 95));
+    }
+    
+    // Обновляем интерфейс
+    const progressElement = document.getElementById('mission-progress');
+    const textElement = document.getElementById('mission-text');
+    
+    if (progressElement && textElement) {
+        progressElement.style.width = `${progress}%`;
+        textElement.textContent = `Готовность передачи: ${progress}%`;
+    }
+    
+    // Определяем статус миссии
+    const message = document.getElementById('mission-message');
+    const launchBtn = document.getElementById('launch-btn');
+    
+    if (!message || !launchBtn) return;
+    
+    if (progress <= 10) {
+        message.textContent = 'Выберите алгоритмы сжатия для файлов!';
+        message.style.background = 'rgba(255, 0, 0, 0.1)';
+        message.style.borderColor = 'var(--danger)';
+        launchBtn.disabled = true;
+    } 
+    else if (progress >= 80) {
+        message.textContent = 'Отлично! Данные готовы к передаче! 🚀';
+        message.style.background = 'rgba(0, 255, 170, 0.1)';
+        message.style.borderColor = 'var(--success)';
+        launchBtn.disabled = false;
+    }
+    else if (progress >= 50) {
+        message.textContent = 'Хорошо, но можно сжать ещё лучше!';
+        message.style.background = 'rgba(255, 143, 0, 0.1)';
+        message.style.borderColor = 'var(--warning)';
+        launchBtn.disabled = true;
+    }
+    else {
+        message.textContent = 'Продолжайте оптимизировать файлы!';
+        message.style.background = 'rgba(255, 0, 0, 0.1)';
+        message.style.borderColor = 'var(--danger)';
+        launchBtn.disabled = true;
+    }
+}
+        function launchSpaceship() {
+            const spaceship = document.getElementById('spaceship');
+            const station = document.getElementById('space-station');
+            const viewport = document.querySelector('.spaceship-view');
+
+            // Создаем буксировочный корабль
+            const tug = document.createElement('div');
+            tug.className = 'spaceship-tug';
+            viewport.appendChild(tug);
+
+            // Анимация подлета буксира
+            setTimeout(() => {
+                tug.style.right = '150px';
+
+                // После подлета буксира
+                setTimeout(() => {
+                    // Анимация отбуксировки станции
+                    station.style.transition = 'transform 5s ease-in-out';
+                    station.style.transform = 'translateX(-300px) translateY(-150px)';
+
+                    // Анимация взрыва черной дыры
+                    const blackHole = document.getElementById('black-hole');
+                    blackHole.style.animation = 'black-hole-explode 2s forwards';
+
+                    // Сообщение об успехе
+                    setTimeout(() => {
+                        showRescueSuccess();
+                    }, 3000);
+                }, 3000);
+            }, 1000);
+        }
+
+        function showRescueSuccess() {
+            const rescueEffect = document.createElement('div');
+            rescueEffect.className = 'rescue-success';
+            rescueEffect.innerHTML = `
+        <h2>МИССИЯ ВЫПОЛНЕНА!</h2>
+        <p>Станция "Мяуринер" успешно отбуксирована из опасной зоны!</p>
+    `;
+            document.querySelector('.spaceship-view').appendChild(rescueEffect);
+
+            // Праздничные эффекты
+            celebrateRescue();
+        }
+        function celebrateRescue() {
+            const viewport = document.querySelector('.spaceship-view');
+
+            // Создаём звёздный дождь
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.style.position = 'absolute';
+                    star.style.width = '4px';
+                    star.style.height = '4px';
+                    star.style.background = 'white';
+                    star.style.borderRadius = '50%';
+                    star.style.boxShadow = '0 0 10px white';
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = '0';
+
+                    // Добавляем анимацию падения
+                    const animationName = `fall-${i}`;
+                    const keyframes = `
+                @keyframes ${animationName} {
+                    to { 
+                        transform: translateY(${viewport.offsetHeight}px);
+                        opacity: 0;
+                    }
+                }
+            `;
+
+                    const style = document.createElement('style');
+                    style.innerHTML = keyframes;
+                    document.head.appendChild(style);
+
+                    star.style.animation = `${animationName} ${Math.random() * 2 + 1}s linear forwards`;
+                    viewport.appendChild(star);
+
+                    setTimeout(() => star.remove(), 2000);
+                }, i * 100);
+            }
+
+            // Анимация планеты
+            const planet = document.getElementById('planet');
+            const planetAnimation = `
+        @keyframes planet-celebrate {
+            0% { transform: scale(1); box-shadow: 0 0 0 var(--primary); }
+            100% { transform: scale(1.1); box-shadow: 0 0 30px var(--success); }
+        }
+    `;
+            const planetStyle = document.createElement('style');
+            planetStyle.innerHTML = planetAnimation;
+            document.head.appendChild(planetStyle);
+            planet.style.animation = 'planet-celebrate 2s infinite alternate';
+
+            // Прячем чёрную дыру
+            const blackHole = document.getElementById('black-hole');
+            const blackHoleAnimation = `
+        @keyframes black-hole-disappear {
+            to { transform: scale(0); opacity: 0; }
+        }
+    `;
+            const blackHoleStyle = document.createElement('style');
+            blackHoleStyle.innerHTML = blackHoleAnimation;
+            document.head.appendChild(blackHoleStyle);
+            blackHole.style.animation = 'black-hole-disappear 1.5s forwards';
+        }
+        let compressedImageBlob = null;
+
+// Показываем/скрываем ползунок качества в зависимости от формата
+document.getElementById('compression-type').addEventListener('change', function() {
+    const qualityContainer = document.getElementById('quality-container');
+    if (this.value === 'png') {
+        qualityContainer.classList.add('hidden');
+    } else {
+        qualityContainer.classList.remove('hidden');
+    }
+});
+
+// Обновляем значение качества
+document.getElementById('quality').addEventListener('input', function() {
+    document.getElementById('quality-value').textContent = `${this.value}%`;
+});
+
+function compressImage() {
+    const fileInput = document.getElementById('image-upload');
+    const compressionType = document.getElementById('compression-type').value;
+    const quality = parseInt(document.getElementById('quality').value) / 100;
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        document.getElementById('image-result').textContent = "Выберите изображение чёрной дыры";
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Показываем оригинальное изображение
+            const originalPreview = document.getElementById('original-preview');
+            originalPreview.innerHTML = '';
+            const originalImg = document.createElement('img');
+            originalImg.src = e.target.result;
+            originalPreview.appendChild(originalImg);
+            
+            document.getElementById('original-size').textContent = 
+                `Размер: ${formatFileSize(file.size)}`;
+
+            // Создаем canvas для сжатия
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            // Сжимаем изображение
+            canvas.toBlob(function(blob) {
+                compressedImageBlob = blob;
+                
+                // Показываем сжатое изображение
+                const compressedPreview = document.getElementById('compressed-preview');
+                compressedPreview.innerHTML = '';
+                const compressedImg = document.createElement('img');
+                compressedImg.src = URL.createObjectURL(blob);
+                compressedPreview.appendChild(compressedImg);
+                
+                document.getElementById('compressed-size').textContent = 
+                    `Размер: ${formatFileSize(blob.size)}`;
+                
+                // Показываем результаты
+                document.getElementById('image-result').textContent =
+                    `Изображение оптимизировано в формате ${compressionType.toUpperCase()}.\n` +
+                    `Размер уменьшен с ${formatFileSize(file.size)} до ${formatFileSize(blob.size)}\n` +
+                    `Экономия места: ${Math.round((1 - blob.size / file.size) * 100)}%\n\n` +
+                    `✅ Фото чёрной дыры готово к передаче!`;
+                
+                // Показываем контейнер с результатами
+                document.getElementById('result-container').classList.remove('hidden');
+                
+            }, `image/${compressionType}`, compressionType === 'png' ? undefined : quality);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function downloadCompressedImage() {
+    if (!compressedImageBlob) return;
+    
+    const compressionType = document.getElementById('compression-type').value;
+    const url = URL.createObjectURL(compressedImageBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `compressed_image.${compressionType}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} байт`;
+    else if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+    else return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+    </script>
+</body>
+
+</html>
