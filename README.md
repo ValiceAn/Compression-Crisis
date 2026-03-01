@@ -1,3 +1,3 @@
-<h1 align="center">SpaceCompress 🚀</h1>
+<h1 align="center">Compression Crisis</h1>
 
-SpaceCompress is an interactive web-based game that immerses players in a critical mission to save the space station Myauriner from the gravitational pull of a black hole. Players are tasked with mastering various data compression algorithms to optimize communication and system efficiency under extreme conditions.
+Compression Crisis puts you on a mission to save a space station from a black hole by using smart data compression to keep everything working.
